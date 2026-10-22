@@ -1,5 +1,6 @@
 package io.mmaltsev.vkeducation.presentation.appdetails
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -15,10 +16,9 @@ import io.mmaltsev.vkeducation.R
 import io.mmaltsev.vkeducation.data.appdetails.hardcodedApps
 import io.mmaltsev.vkeducation.domain.appdetails.AppItem
 
-// 👇 ВОТ ЭТА СТРОЧКА РЕШАЕТ ПРОБЛЕМУ 👇
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AppListScreen() {
+fun AppListScreen(onAppClick: (String) -> Unit) {
     Scaffold(
         topBar = {
             TopAppBar(
@@ -32,63 +32,66 @@ fun AppListScreen() {
                     Image(
                         painter = painterResource(id = R.drawable.ic_launcher_foreground),
                         contentDescription = "App Icon",
-                        modifier = Modifier
-                            .size(32.dp)
-                            .padding(start = 8.dp)
+                        modifier = Modifier.size(32.dp).padding(start = 8.dp)
                     )
                 }
             )
         }
     ) { paddingValues ->
         LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .padding(horizontal = 16.dp, vertical = 8.dp),
+            modifier = Modifier.fillMaxSize().padding(paddingValues).padding(horizontal = 16.dp, vertical = 8.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             items(hardcodedApps) { app ->
-                AppItemCard(app = app)
+                AppItemCard(
+                    app = app,
+                    onClick = { onAppClick(app.id) } // Передаем клик наверх
+                )
             }
         }
     }
 }
 
 @Composable
-fun AppItemCard(app: AppItem) {
+fun AppItemCard(
+    app: AppItem,
+    modifier: Modifier = Modifier,
+    onClick: (() -> Unit)? = null
+) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier
+            .fillMaxWidth()
+            .then(if (onClick != null) Modifier.clickable { onClick() } else Modifier),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
+            modifier = Modifier.fillMaxWidth().padding(12.dp), // Чуть уменьшил padding для витрины
             verticalAlignment = Alignment.CenterVertically
         ) {
             Image(
                 painter = painterResource(id = app.iconResId),
                 contentDescription = "${app.name} icon",
-                modifier = Modifier.size(48.dp)
+                modifier = Modifier.size(40.dp)
             )
 
-            Spacer(modifier = Modifier.width(16.dp))
+            Spacer(modifier = Modifier.width(12.dp))
 
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = app.name,
                     style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
+                    maxLines = 1
                 )
                 Text(
                     text = app.description,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 2
                 )
-                Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = app.category,
-                    style = MaterialTheme.typography.labelMedium,
+                    style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.primary,
                     fontWeight = FontWeight.Medium
                 )
