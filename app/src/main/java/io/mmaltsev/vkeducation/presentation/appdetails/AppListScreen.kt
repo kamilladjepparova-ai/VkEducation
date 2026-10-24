@@ -1,28 +1,53 @@
 package io.mmaltsev.vkeducation.presentation.appdetails
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import io.mmaltsev.vkeducation.R
-import io.mmaltsev.vkeducation.data.appdetails.hardcodedApps
 import io.mmaltsev.vkeducation.domain.appdetails.AppItem
+import kotlinx.coroutines.flow.collectLatest
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AppListScreen(onAppClick: (String) -> Unit) {
+fun AppListScreen(
+    viewModel: AppListViewModel = viewModel(),
+    onAppClick: (String) -> Unit
+) {
+    val uiState by viewModel.uiState.collectAsState()
+
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    LaunchedEffect(Unit) {
+        viewModel.events.collectLatest { event ->
+            when (event) {
+                is AppListEvent.ShowSnackbar -> {
+                    snackbarHostState.showSnackbar(event.message)
+                }
+            }
+        }
+    }
+
     Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) }, // Подключаем хост для Snackbar
         topBar = {
             TopAppBar(
-                title = { Text("Приложения") },
+                title = {
+                    // Делаем текст в тулбаре кликабельным
+                    Text(
+                        text = "Приложения",
+                        modifier = Modifier.clickable { viewModel.onToolbarClick() }
+                    )
+                },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primary,
                     titleContentColor = MaterialTheme.colorScheme.onPrimary,
@@ -32,20 +57,25 @@ fun AppListScreen(onAppClick: (String) -> Unit) {
                     Image(
                         painter = painterResource(id = R.drawable.ic_launcher_foreground),
                         contentDescription = "App Icon",
-                        modifier = Modifier.size(32.dp).padding(start = 8.dp)
+                        modifier = Modifier
+                            .size(32.dp)
+                            .padding(start = 8.dp)
                     )
                 }
             )
         }
     ) { paddingValues ->
         LazyColumn(
-            modifier = Modifier.fillMaxSize().padding(paddingValues).padding(horizontal = 16.dp, vertical = 8.dp),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .padding(horizontal = 16.dp, vertical = 8.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            items(hardcodedApps) { app ->
+            items(uiState.apps) { app ->
                 AppItemCard(
                     app = app,
-                    onClick = { onAppClick(app.id) } // Передаем клик наверх
+                    onClick = { onAppClick(app.id) }
                 )
             }
         }
@@ -65,7 +95,7 @@ fun AppItemCard(
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth().padding(12.dp), // Чуть уменьшил padding для витрины
+            modifier = Modifier.fillMaxWidth().padding(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Image(
