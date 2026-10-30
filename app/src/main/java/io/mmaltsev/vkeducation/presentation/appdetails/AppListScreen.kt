@@ -24,7 +24,6 @@ fun AppListScreen(
     onAppClick: (String) -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
-
     val snackbarHostState = remember { SnackbarHostState() }
 
     LaunchedEffect(Unit) {
@@ -33,16 +32,18 @@ fun AppListScreen(
                 is AppListEvent.ShowSnackbar -> {
                     snackbarHostState.showSnackbar(event.message)
                 }
+                is AppListEvent.ShowError -> {
+                    snackbarHostState.showSnackbar(event.message)
+                }
             }
         }
     }
 
     Scaffold(
-        snackbarHost = { SnackbarHost(snackbarHostState) }, // Подключаем хост для Snackbar
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
                 title = {
-                    // Делаем текст в тулбаре кликабельным
                     Text(
                         text = "Приложения",
                         modifier = Modifier.clickable { viewModel.onToolbarClick() }
@@ -57,26 +58,44 @@ fun AppListScreen(
                     Image(
                         painter = painterResource(id = R.drawable.ic_launcher_foreground),
                         contentDescription = "App Icon",
-                        modifier = Modifier
-                            .size(32.dp)
-                            .padding(start = 8.dp)
+                        modifier = Modifier.size(32.dp).padding(start = 8.dp)
                     )
                 }
             )
         }
     ) { paddingValues ->
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .padding(horizontal = 16.dp, vertical = 8.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            items(uiState.apps) { app ->
-                AppItemCard(
-                    app = app,
-                    onClick = { onAppClick(app.id) }
-                )
+        when {
+            uiState.isLoading -> {
+                // Показываем загрузку
+                Box(
+                    modifier = Modifier.fillMaxSize().padding(paddingValues),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator()
+                }
+            }
+            uiState.apps.isEmpty() -> {
+                // Пустой список
+                Box(
+                    modifier = Modifier.fillMaxSize().padding(paddingValues),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text("Список пуст")
+                }
+            }
+            else -> {
+                // Основной список
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize().padding(paddingValues).padding(horizontal = 16.dp, vertical = 8.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    items(uiState.apps) { app ->
+                        AppItemCard(
+                            app = app,
+                            onClick = { onAppClick(app.id) }
+                        )
+                    }
+                }
             }
         }
     }
