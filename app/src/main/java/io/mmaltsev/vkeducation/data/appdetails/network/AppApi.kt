@@ -1,5 +1,6 @@
 package io.mmaltsev.vkeducation.data.appdetails.network
 
+import io.mmaltsev.vkeducation.data.appdetails.AppDetailsDto
 import kotlinx.coroutines.delay
 import retrofit2.http.GET
 import retrofit2.http.Path

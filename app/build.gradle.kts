@@ -4,7 +4,7 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.hilt.android)
-    alias(libs.plugins.ksp) // <-- ЗАМЕНА: был kotlin.kapt, стал ksp
+    alias(libs.plugins.ksp)
 }
 
 android {
@@ -17,7 +17,6 @@ android {
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
-
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -32,28 +31,21 @@ android {
     }
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
     }
 
     kotlinOptions {
-        jvmTarget = "1.8"
-        // freeCompilerArgs удалены, они больше не нужны с KSP
+        jvmTarget = "11"
     }
 
     buildFeatures {
         compose = true
     }
-
-    hilt {
-        enableAggregatingTask = false
-    }
-
-    // Блок kapt полностью удален, он больше не используется
 }
 
 dependencies {
-    // Core & Compose
+    // --- Compose / AndroidX ---
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
@@ -62,30 +54,41 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
-
-    // ViewModel & Coil
-    implementation(libs.coil.compose)
-    implementation(libs.coil.network.okhttp)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
 
-    // Network
+    // --- Coil ---
+    implementation(libs.coil.compose)
+    implementation(libs.coil.network.okhttp)
+
+    // --- Network ---
     implementation(libs.retrofit)
     implementation(libs.retrofit.converter.kotlinx.serialization)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.okhttp)
 
-    // Hilt (kapt заменен на ksp)
+    // --- Hilt ---
     implementation(libs.hilt.android)
-    ksp(libs.hilt.compiler) // <-- БЫЛО kapt
-    implementation(libs.hilt.navigation.compose)
+    ksp(libs.hilt.compiler)
 
-    // Room (kapt заменен на ksp)
-    implementation("androidx.room:room-runtime:2.6.1")
-    ksp("androidx.room:room-compiler:2.6.1") // <-- БЫЛО kapt
-    implementation("androidx.room:room-ktx:2.6.1")
+    // --- Navigation + Hilt-Navigation ---
+    implementation("androidx.navigation:navigation-compose:2.8.9")
+    implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
+    // Если libs.hilt.navigation.compose существует, можно оставить и его, но явных версий выше достаточно
 
-    // Tests
-    testImplementation(libs.junit)
+    // --- Room (через KSP) ---
+    val roomVersion = "2.6.1"
+    implementation("androidx.room:room-runtime:$roomVersion")
+    implementation("androidx.room:room-ktx:$roomVersion")
+    ksp("androidx.room:room-compiler:$roomVersion")
+
+    // ==========================================
+    // --- ТЕСТОВЫЕ ЗАВИСИМОСТИ (ЯВНЫЕ ВЕРСИИ) ---
+    // ==========================================
+    testImplementation("junit:junit:4.13.2")
+    testImplementation("io.mockk:mockk:1.13.10")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.1")
+
+    // --- UI-тесты (instrumented) ---
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))

@@ -8,4 +8,10 @@ class SimilarAppMapper {
         name = dto.name,
         iconUrl = dto.iconUrl,
     )
+
+    fun toDto(domain: SimilarApp): SimilarAppDto = SimilarAppDto(
+        id = domain.id,
+        name = domain.name,
+        iconUrl = domain.iconUrl,
+    )
 }

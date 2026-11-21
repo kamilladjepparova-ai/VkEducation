@@ -2,14 +2,15 @@ package io.mmaltsev.vkeducation.data.appdetails
 
 import io.mmaltsev.vkeducation.data.appdetails.local.AppDetailsDao
 import io.mmaltsev.vkeducation.data.appdetails.local.AppDetailsEntityMapper
-import io.mmaltsev.vkeducation.data.appdetails.network.AppApi // 👈 ВОТ ЭТА СТРОКА РЕШАЕТ ПРОБЛЕМУ
+import io.mmaltsev.vkeducation.data.appdetails.network.AppApi
 import io.mmaltsev.vkeducation.domain.appdetails.AppDetails
 import io.mmaltsev.vkeducation.domain.appdetails.AppDetailsRepository
+import jakarta.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
-import javax.inject.Inject
+
 
 class AppDetailsRepositoryImpl @Inject constructor(
     private val appApi: AppApi,

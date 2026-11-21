@@ -1,4 +1,4 @@
-package io.mmaltsev.vkeducation.data.appdetails.network
+package io.mmaltsev.vkeducation.data.appdetails
 
 import io.mmaltsev.vkeducation.domain.appdetails.Category
 import kotlinx.serialization.SerialName
